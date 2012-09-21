@@ -4,20 +4,25 @@ import Graphics.Rendering.OpenGL
 import Graphics.UI.GLUT
 import Control.Monad (forM_)
 
+import Types
+
 display angle = do
   clear [ColorBuffer]
-
   loadIdentity
   scale 0.05 0.05 (0.05::GLfloat)
-
   a <- get angle
   rotate a $ Vector3 0 0 1
-
   drawShip
-
   swapBuffers
 
-idle = do
+idle actions angle = do
+  as <- get actions
+  ang <- get angle
+  forM_ as $ \(action) ->
+    case action of
+      TurnLeft -> angle $= (ang + 5)
+      TurnRight -> angle $= (ang - 5)
+      _ -> return ()
   postRedisplay Nothing
 
 
