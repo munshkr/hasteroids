@@ -41,6 +41,7 @@ keyboardAct angle (SpecialKey KeyLeft) = do
 keyboardAct angle (SpecialKey KeyRight) = do
   a <- get angle
   angle $= a - 5
+keyboardAct _ _ = return ()
 
 {-
 keyboardAct pos (SpecialKey KeyUp) = do
