@@ -7,29 +7,66 @@ type TextPosition = (GLfloat, GLfloat)
 type TextSize = GLfloat
 
 renderText :: TextPosition -> TextSize -> String -> IO ()
-renderText _ _ _ = return ()
+renderText _ _ [] = return ()
+renderText pos@(x, y) size (c:cs) = do
+  renderChar pos size c
+  renderText (x + (charWidth + charPadding) * size, y) size cs
 
 renderChar :: TextPosition -> TextSize -> Char -> IO ()
-renderChar pos size c = preservingMatrix $ do
-  translate $ Vector3 (fst pos) (snd pos) 0
+renderChar (x, y) size c = preservingMatrix $ do
+  translate $ Vector3 x y 0
   scale size size size
-  renderRawChar c
-
-renderRawChar :: Char -> IO ()
-renderRawChar c = do
+  lineWidth $= charLineWidth
   renderPrimitive Lines $ do
-  forM_ (rawCharVertices c) $ \(x, y) -> vertex $ Vertex2 x y
+  forM_ (charVertices c) $ \(x, y) -> vertex $ Vertex2 x y
 
-rawCharVertices :: Char -> [(GLfloat, GLfloat)]
-rawCharVertices c = let h = rawCharHeight
-                        w = rawCharWidth
+charVertices :: Char -> [(GLfloat, GLfloat)]
+charVertices c = let h = charHeight
+                     w = charWidth
                  in case c of
-  '0' -> [ (0,0), (w,0), (w,0), (w,h), (w,h), (0,h), (0,h), (0,0), (0,0), (w,h) ]
-  '1' -> [ (w,0), (w,h) ]
-  '2' -> [ (0,h), (w,h), (w,h), (w,h/2), (w,h/2), (0,h/2), (0,h/2), (0,0), (0,0), (w,0) ]
-  '3' -> [ (0,h), (w,h), (0,h/2), (w,h/2), (0,0), (w,0), (w,h), (w,0) ]
-  '4' -> [ (0,h), (0,h/2), (0,h/2), (w,h/2), (w,h), (w,0) ]
-  _   -> [ (0,0), (w,0), (w,0), (w,h), (w,h), (0,h), (0,h), (0,0) ]
+  '0' -> [ (0,0), (w,0),
+           (w,0), (w,h),
+           (w,h), (0,h),
+           (0,h), (0,0),
+           (0,0), (w,h) ]
+  '1' -> [ (w/2,0), (w/2,h) ]
+  '2' -> [ (0,h), (w,h),
+           (w,h), (w,h/2),
+           (w,h/2), (0,h/2),
+           (0,h/2), (0,0),
+           (0,0), (w,0) ]
+  '3' -> [ (0,h), (w,h),
+           (0,h/2), (w,h/2),
+           (0,0), (w,0),
+           (w,h), (w,0) ]
+  '4' -> [ (0,h), (0,h/2),
+           (0,h/2), (w,h/2),
+           (w,h), (w,0) ]
+  '5' -> [ (0,h), (w,h),
+           (0,h), (0,h/2),
+           (w,h/2), (0,h/2),
+           (w,h/2), (w,0),
+           (0,0), (w,0) ]
+  '6' -> [ (0,0), (0,h),
+           (0,h), (w,h),
+           (0,0), (w,0),
+           (w,0), (w,h/2),
+           (w,h/2), (0,h/2) ]
+  '7' -> [ (0,h), (w,h),
+           (w,h), (w,0) ]
+  '8' -> [ (0,0), (w,0),
+           (w,0), (w,h),
+           (w,h), (0,h),
+           (0,h), (0,0),
+           (0,h/2), (w,h/2) ]
+  '9' -> [ (0,h), (w,h),
+           (0,h), (0,h/2),
+           (0,h/2), (w,h/2),
+           (w,0), (w,h) ]
+  _   -> [ (0,0), (w,0) ]
 
-rawCharHeight = 1.0
-rawCharWidth  = 0.6
+charLineWidth = 1.0
+charHeight    = 1.0
+charWidth     = 0.6
+charPadding   = 0.2
+
