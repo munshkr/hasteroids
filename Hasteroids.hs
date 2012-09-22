@@ -7,12 +7,17 @@ import Display
 import Keyboard
 
 main = do
-  (progname, _) <- getArgsAndInitialize
-
+  getArgsAndInitialize
   initialDisplayMode $= [DoubleBuffered]
   initialWindowSize $= Size 600 600
-  lineSmooth $= Enabled
 
+  -- enable anti-aliasing?
+  lineSmooth $= Enabled
+  blend $= Enabled
+  blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
+  hint LineSmooth $= DontCare
+
+  -- state variables
   angle <- newIORef (0.0::GLfloat)
   actions <- newIORef ([]::[Action])
 

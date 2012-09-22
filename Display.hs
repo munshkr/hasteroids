@@ -5,14 +5,15 @@ import Graphics.UI.GLUT
 import Control.Monad (forM_)
 
 import Types
-import Text (renderChar)
+import Text (renderText, renderChar)
 
 display angle = do
   clear [ColorBuffer]
   loadIdentity
   scale 0.025 0.025 (0.05::GLfloat)
 
-  renderChar (-20, -30) 5 'A'
+  renderChar (-20, -30) 5 '0'
+  renderText (-20, -30) 5 "0123456789"
 
   a <- get angle
   rotate a $ Vector3 0 0 1
