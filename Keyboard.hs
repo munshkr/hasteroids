@@ -7,29 +7,23 @@ import Data.IORef
 
 import Types
 
-keyboardMouse :: IORef [Action] -> Key -> KeyState -> Modifiers -> Position -> IO ()
-keyboardMouse actions key Down _ _
+keyboardMouse :: PlayerState -> KeyboardMouseCallback
+keyboardMouse player key Down _ _
   | key == Char '\ESC' = leaveMainLoop
   | otherwise = do
-    as <- get actions
-    actions $= case (actionFor key) of
+    as <- get $ actions player
+    (actions player) $= case (actionFor key) of
       Just action -> nub (action : as)
       Nothing -> as
-    --printState actions key Down
-keyboardMouse actions key Up _ _ = do
-  as <- get actions
-  actions $= case (actionFor key) of
+
+keyboardMouse player key Up _ _ = do
+  as <- get $ actions player
+  (actions player) $= case (actionFor key) of
     Just action -> delete action as
     Nothing -> as
-  --printState actions key Up
 
-actionFor :: Key -> Maybe Action
+actionFor :: Key -> Maybe PlayerAction
 actionFor (SpecialKey KeyLeft)  = Just TurnLeft
 actionFor (SpecialKey KeyRight) = Just TurnRight
 actionFor (SpecialKey KeyUp)    = Just Accelerate
 actionFor _ = Nothing
-
-printState :: IORef [Action] -> Key -> KeyState -> IO ()
-printState actions key state = do
-  as <- get actions
-  putStrLn $ show (as, key, state)

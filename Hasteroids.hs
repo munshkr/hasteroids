@@ -1,5 +1,5 @@
-import Graphics.Rendering.OpenGL
-import Graphics.UI.GLUT
+import Graphics.Rendering.OpenGL hiding (position)
+import Graphics.UI.GLUT hiding (position)
 import Data.IORef
 
 import Types
@@ -18,18 +18,16 @@ main = do
   blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
   hint LineSmooth $= DontCare
 
-  -- state variables
-  actions  <- newIORef ([]::[Action])
-  angle    <- newIORef (90.0 ::GLfloat)
-  position <- newIORef ((0, 0)::(GLfloat, GLfloat))
-  inertia  <- newIORef ((0, 0)::(GLfloat, GLfloat))
+  -- state
+  ship   <- makeShipState
+  player <- makePlayerState
 
   createWindow "Hasteroids"
 
   -- callbacks
-  keyboardMouseCallback $= Just (keyboardMouse actions)
-  displayCallback $= (display position angle)
-  idleCallback $= Just (idle actions position angle inertia)
+  keyboardMouseCallback $= Just (keyboardMouse player)
+  displayCallback $= display ship
+  idleCallback $= Just (idle player ship)
   reshapeCallback $= Just reshape
 
   mainLoop
@@ -38,3 +36,16 @@ main = do
 reshape :: ReshapeCallback
 reshape s@(Size w h) = do
   viewport $= (Position 0 0, s)
+
+
+makeShipState :: IO ShipState
+makeShipState = do
+  a <- newIORef 90
+  p <- newIORef (0, 0)
+  i <- newIORef (0, 0)
+  return $ ShipState { angle = a, position = p, inertia = i }
+
+makePlayerState :: IO PlayerState
+makePlayerState = do
+  as <- newIORef []
+  return $ PlayerState { actions = as }

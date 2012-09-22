@@ -1,50 +1,53 @@
 module Display (display, idle) where
 
-import Graphics.Rendering.OpenGL
-import Graphics.UI.GLUT
+import Graphics.Rendering.OpenGL hiding (position)
+import Graphics.UI.GLUT hiding (position)
 import Control.Monad (forM_)
 import Data.IORef (IORef)
 
 import Types
 import Text (renderText)
 
-display :: IORef (GLfloat, GLfloat) -> IORef GLfloat -> DisplayCallback
-display position angle = do
+display :: ShipState -> DisplayCallback
+display ship = do
   clear [ColorBuffer]
   loadIdentity
   scale 0.025 0.025 (0.025::GLfloat)
 
   renderText (-20, -30) 3 "0123456789"
 
-  a <- get angle
-  (x, y) <- get position
-
+  (x, y) <- get $ position ship
   translate $ Vector3 x y (0::GLfloat)
-  rotate a $ Vector3 0 0 1
+
+  angle <- get $ angle ship
+  rotate angle $ Vector3 0 0 1
+
   drawShip
 
   swapBuffers
 
 
-idle :: IORef [Action] -> IORef (GLfloat, GLfloat) -> IORef GLfloat -> IORef (GLfloat, GLfloat) -> IdleCallback
-idle actions position angle inertia = do
-  as <- get actions
-  ang <- get angle
-  (iX, iY) <- get inertia
+idle :: PlayerState -> ShipState -> IdleCallback
+idle player ship = do
+  as <- get $ actions player
+  a  <- get $ angle ship
+  (iX, iY) <- get $ inertia ship
 
   -- update angle and inertia based on actions
-  forM_ as $ \(action) ->
-    let dx = cos $ ang * pi / 180.0
-        dy = sin $ ang * pi / 180.0
+  forM_ as $ \action ->
+    let dx = cos $ a * pi / 180.0
+        dy = sin $ a * pi / 180.0
         c = 0.01
     in case action of
-      TurnLeft  -> angle $= (ang + 5)
-      TurnRight -> angle $= (ang - 5)
-      Accelerate    -> inertia $= (iX + dx * c, iY + dy * c)
+      TurnLeft   -> (angle ship)   $= (a + 5)
+      TurnRight  -> (angle ship)   $= (a - 5)
+      Accelerate -> (inertia ship) $= (iX + dx * c, iY + dy * c)
 
   -- update position
-  (x, y) <- get position
-  position $= (x + iX, y + iY)
+  (x, y) <- get $ position ship
+  (position ship) $= (x + iX, y + iY)
+
+  --putStrLn $ show (x, y)
 
   postRedisplay Nothing
 
