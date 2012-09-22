@@ -5,14 +5,19 @@ import Graphics.UI.GLUT
 import Control.Monad (forM_)
 
 import Types
+import Text (renderChar)
 
 display angle = do
   clear [ColorBuffer]
   loadIdentity
   scale 0.025 0.025 (0.05::GLfloat)
+
+  renderChar (-20, -30) 5 'A'
+
   a <- get angle
   rotate a $ Vector3 0 0 1
   drawShip
+
   swapBuffers
 
 idle actions angle = do
