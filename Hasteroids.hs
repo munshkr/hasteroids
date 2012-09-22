@@ -6,6 +6,7 @@ import Types
 import Display
 import Keyboard
 
+main :: IO ()
 main = do
   getArgsAndInitialize
   initialDisplayMode $= [DoubleBuffered]
@@ -34,5 +35,6 @@ main = do
   mainLoop
 
 
+reshape :: ReshapeCallback
 reshape s@(Size w h) = do
   viewport $= (Position 0 0, s)

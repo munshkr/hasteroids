@@ -70,4 +70,3 @@ charLineWidth = 1.0
 charHeight    = 1.0
 charWidth     = 0.6
 charPadding   = 0.2
-

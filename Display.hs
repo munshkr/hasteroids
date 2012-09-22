@@ -3,10 +3,12 @@ module Display (display, idle) where
 import Graphics.Rendering.OpenGL
 import Graphics.UI.GLUT
 import Control.Monad (forM_)
+import Data.IORef (IORef)
 
 import Types
 import Text (renderText)
 
+display :: IORef (GLfloat, GLfloat) -> IORef GLfloat -> DisplayCallback
 display position angle = do
   clear [ColorBuffer]
   loadIdentity
@@ -24,6 +26,7 @@ display position angle = do
   swapBuffers
 
 
+idle :: IORef [Action] -> IORef (GLfloat, GLfloat) -> IORef GLfloat -> IORef (GLfloat, GLfloat) -> IdleCallback
 idle actions position angle inertia = do
   as <- get actions
   ang <- get angle
