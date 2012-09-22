@@ -18,14 +18,17 @@ main = do
   hint LineSmooth $= DontCare
 
   -- state variables
-  angle <- newIORef (0.0::GLfloat)
-  actions <- newIORef ([]::[Action])
+  actions  <- newIORef ([]::[Action])
+  angle    <- newIORef (90.0 ::GLfloat)
+  position <- newIORef ((0, 0)::(GLfloat, GLfloat))
+  inertia  <- newIORef ((0, 0)::(GLfloat, GLfloat))
 
   createWindow "Hasteroids"
 
+  -- callbacks
   keyboardMouseCallback $= Just (keyboardMouse actions)
-  displayCallback $= (display angle)
-  idleCallback $= Just (idle actions angle)
+  displayCallback $= (display position angle)
+  idleCallback $= Just (idle actions position angle inertia)
   reshapeCallback $= Just reshape
 
   mainLoop

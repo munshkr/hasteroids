@@ -10,7 +10,8 @@ renderText :: TextPosition -> TextSize -> String -> IO ()
 renderText _ _ [] = return ()
 renderText pos@(x, y) size (c:cs) = do
   renderChar pos size c
-  renderText (x + (charWidth + charPadding) * size, y) size cs
+  renderText (x', y) size cs
+    where x' = x + (charWidth + charPadding) * size
 
 renderChar :: TextPosition -> TextSize -> Char -> IO ()
 renderChar (x, y) size c = preservingMatrix $ do
