@@ -9,7 +9,7 @@ import Types
 display angle = do
   clear [ColorBuffer]
   loadIdentity
-  scale 0.05 0.05 (0.05::GLfloat)
+  scale 0.025 0.025 (0.05::GLfloat)
   a <- get angle
   rotate a $ Vector3 0 0 1
   drawShip
