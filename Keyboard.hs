@@ -27,7 +27,6 @@ actionFor :: Key -> Maybe Action
 actionFor (SpecialKey KeyLeft)  = Just TurnLeft
 actionFor (SpecialKey KeyRight) = Just TurnRight
 actionFor (SpecialKey KeyUp)    = Just Accelerate
-actionFor (SpecialKey KeyDown)  = Just Desaccelerate
 actionFor _ = Nothing
 
 printState :: IORef [Action] -> Key -> KeyState -> IO ()

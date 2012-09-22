@@ -38,7 +38,6 @@ idle actions position angle inertia = do
       TurnLeft  -> angle $= (ang + 5)
       TurnRight -> angle $= (ang - 5)
       Accelerate    -> inertia $= (iX + dx * c, iY + dy * c)
-      Desaccelerate -> inertia $= (iX - dx * c, iY - dy * c)
 
   -- update position
   (x, y) <- get position
