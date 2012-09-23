@@ -8,13 +8,13 @@ import Data.IORef
 import Types
 
 keyboardMouse :: PlayerState -> KeyboardMouseCallback
-keyboardMouse player key Down _ _
-  | key == Char '\ESC' = leaveMainLoop
-  | otherwise = do
-    as <- get $ actions player
-    (actions player) $= case (actionFor key) of
-      Just action -> nub (action : as)
-      Nothing -> as
+keyboardMouse _ (Char '\ESC') Down _ _ = leaveMainLoop
+
+keyboardMouse player key Down _ _ = do
+  as <- get $ actions player
+  (actions player) $= case (actionFor key) of
+    Just action -> nub (action : as)
+    Nothing -> as
 
 keyboardMouse player key Up _ _ = do
   as <- get $ actions player
