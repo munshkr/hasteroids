@@ -42,6 +42,7 @@ idle player ship = do
       TurnLeft   -> (angle ship)   $= (a + 5)
       TurnRight  -> (angle ship)   $= (a - 5)
       Accelerate -> (inertia ship) $= (iX + dx * c, iY + dy * c)
+      _          -> return ()
 
   -- update position
   (x, y) <- get $ position ship

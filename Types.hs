@@ -13,5 +13,5 @@ data PlayerState = PlayerState {
     actions :: IORef [PlayerAction]
   } deriving (Eq)
 
-data PlayerAction = TurnLeft | TurnRight | Accelerate
+data PlayerAction = TurnLeft | TurnRight | Accelerate | Shoot
   deriving (Eq, Show)
