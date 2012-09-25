@@ -8,6 +8,9 @@ import Data.IORef (IORef)
 import Types
 import Text (renderText)
 
+viewportWidth  = 80.0
+viewportHeight = 80.0
+
 display :: ShipState -> DisplayCallback
 display ship = do
   clear [ColorBuffer]
@@ -17,15 +20,13 @@ display ship = do
   renderText (-20, -30) 3 "0123456789"
 
   (x, y) <- get $ position ship
-  translate $ Vector3 x y (0::GLfloat)
+  ang <- get $ angle ship
 
-  angle <- get $ angle ship
-  rotate angle $ Vector3 0 0 1
-
-  drawShip
+  forM_ [-1, 0, 1] $ \i ->
+    forM_ [-1, 0, 1] $ \j ->
+      drawShipAt (x + viewportWidth * i, y + viewportHeight * j) ang
 
   swapBuffers
-
 
 idle :: PlayerState -> ShipState -> IdleCallback
 idle player ship = do
@@ -46,12 +47,18 @@ idle player ship = do
 
   -- update position
   (x, y) <- get $ position ship
-  (position ship) $= (x + iX, y + iY)
+  (position ship) $= ((x + iX) `fmod` viewportWidth,
+                      (y + iY) `fmod` viewportHeight)
 
   --putStrLn $ show (x, y)
 
   postRedisplay Nothing
 
+drawShipAt :: (GLfloat, GLfloat) -> GLfloat -> IO ()
+drawShipAt (x, y) angle = preservingMatrix $ do
+  translate $ Vector3 x y (0::GLfloat)
+  rotate angle $ Vector3 0 0 1
+  drawShip
 
 drawShip :: IO ()
 drawShip = preservingMatrix $ do

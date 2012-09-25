@@ -15,3 +15,8 @@ data PlayerState = PlayerState {
 
 data PlayerAction = TurnLeft | TurnRight | Accelerate | Shoot
   deriving (Eq, Show)
+
+fmod :: RealFrac a => a -> a -> a
+fmod n 0 = n / 0
+fmod n m = n - d * m
+  where d = fromIntegral (truncate (n / m))
