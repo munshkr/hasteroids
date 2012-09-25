@@ -4,6 +4,8 @@ import Graphics.Rendering.OpenGL hiding (position)
 import Graphics.UI.GLUT hiding (position)
 import Control.Monad (forM_)
 import Data.IORef (IORef)
+import Data.List (delete)
+import Data.IORef
 
 import Types
 import Text (renderText)
@@ -11,8 +13,8 @@ import Text (renderText)
 viewportWidth  = 80.0
 viewportHeight = 80.0
 
-display :: ShipState -> DisplayCallback
-display ship = do
+display :: ShipState -> IORef [RocketState] -> DisplayCallback
+display ship rockets = do
   clear [ColorBuffer]
   loadIdentity
   scale 0.025 0.025 (0.025::GLfloat)
@@ -20,19 +22,26 @@ display ship = do
   renderText (-20, -30) 3 "0123456789"
 
   (x, y) <- get $ position ship
-  ang <- get $ angle ship
+  ang    <- get $ angle ship
+  rs     <- get $ rockets
 
   forM_ [-1, 0, 1] $ \i ->
-    forM_ [-1, 0, 1] $ \j ->
+    forM_ [-1, 0, 1] $ \j -> do
       drawShipAt (x + viewportWidth * i, y + viewportHeight * j) ang
+      forM_ rs $ \r -> do
+        (x, y) <- get $ rocketPosition r
+        angle  <- get $ rocketAngle r
+        drawRocketAt (x + viewportWidth * i, y + viewportHeight * j) angle
 
   swapBuffers
 
-idle :: PlayerState -> ShipState -> IdleCallback
-idle player ship = do
+idle :: PlayerState -> ShipState -> IORef [RocketState] -> IdleCallback
+idle player ship rockets = do
   as <- get $ actions player
   a  <- get $ angle ship
+  (x, y)   <- get $ position ship
   (iX, iY) <- get $ inertia ship
+  rs <- get rockets
 
   -- update angle and inertia based on actions
   forM_ as $ \action ->
@@ -43,14 +52,23 @@ idle player ship = do
       TurnLeft   -> (angle ship)   $= (a + 5)
       TurnRight  -> (angle ship)   $= (a - 5)
       Accelerate -> (inertia ship) $= (iX + dx * c, iY + dy * c)
-      _          -> return ()
+      Shoot      -> do
+        newRocket <- makeRocket a (x, y) (dx, dy)
+        rockets   $= newRocket : rs
 
-  -- update position
-  (x, y) <- get $ position ship
+  -- update position of the ship
   (position ship) $= ((x + iX) `fmod` viewportWidth,
                       (y + iY) `fmod` viewportHeight)
 
-  --putStrLn $ show (x, y)
+  -- update position of every rocket
+  forM_ rs $ \r -> do
+    (x, y)   <- get $ rocketPosition r
+    (iX, iY) <- get $ rocketInertia r
+    (rocketPosition r) $= ((x + iX) `fmod` viewportWidth,
+                           (y + iY) `fmod` viewportHeight)
+
+  -- remove Shoot action to avoid rapid fire
+  (actions player) $= delete Shoot as
 
   postRedisplay Nothing
 
@@ -76,3 +94,30 @@ shipPoints w h =
     (0,       -(h / 2)),
     (  w / 2,   h / 2),
     (0,         h / 4) ]
+
+drawRocketAt :: (GLfloat, GLfloat) -> GLfloat -> IO ()
+drawRocketAt (x, y) angle = preservingMatrix $ do
+  translate $ Vector3 x y (0::GLfloat)
+  rotate angle $ Vector3 0 0 1
+  drawRocket
+
+drawRocket :: IO ()
+drawRocket = preservingMatrix $ do
+  lineWidth $= 2.5
+  rotate (90::GLfloat) $ Vector3 0 0 1
+  translate $ Vector3 0 (-3) (0::GLfloat)
+  color $ Color3 1 1 (1::GLfloat)
+  renderPrimitive Lines $ do
+    vertex $ Vertex2 0 (0::GLfloat)
+    vertex $ Vertex2 0 (1::GLfloat)
+
+makeRocket :: GLfloat -> (GLfloat, GLfloat) -> (GLfloat, GLfloat) -> IO RocketState
+makeRocket angle position inertia = do
+  a <- newIORef angle
+  p <- newIORef position
+  i <- newIORef inertia
+  return $ RocketState {
+      rocketAngle = a,
+      rocketPosition = p,
+      rocketInertia = i
+    }

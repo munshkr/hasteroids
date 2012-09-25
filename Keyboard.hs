@@ -26,4 +26,5 @@ actionFor :: Key -> Maybe PlayerAction
 actionFor (SpecialKey KeyLeft)  = Just TurnLeft
 actionFor (SpecialKey KeyRight) = Just TurnRight
 actionFor (SpecialKey KeyUp)    = Just Accelerate
+actionFor (Char ' ') = Just Shoot
 actionFor _ = Nothing

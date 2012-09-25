@@ -19,24 +19,23 @@ main = do
   hint LineSmooth $= DontCare
 
   -- state
-  ship   <- makeShipState
-  player <- makePlayerState
+  ship    <- makeShipState
+  player  <- makePlayerState
+  rockets <- newIORef ([] :: [RocketState])
 
   createWindow "Hasteroids"
 
   -- callbacks
   keyboardMouseCallback $= Just (keyboardMouse player)
-  displayCallback $= display ship
-  idleCallback $= Just (idle player ship)
+  displayCallback $= display ship rockets
+  idleCallback $= Just (idle player ship rockets)
   reshapeCallback $= Just reshape
 
   mainLoop
 
-
 reshape :: ReshapeCallback
 reshape s@(Size w h) = do
   viewport $= (Position 0 0, s)
-
 
 makeShipState :: IO ShipState
 makeShipState = do
