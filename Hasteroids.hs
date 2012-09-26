@@ -41,8 +41,8 @@ makeShipState :: IO ShipState
 makeShipState = do
   a <- newIORef 90
   p <- newIORef (0, 0)
-  i <- newIORef (0, 0)
-  return $ ShipState { angle = a, position = p, inertia = i }
+  v <- newIORef (0, 0)
+  return $ ShipState { angle = a, position = p, velocity = v }
 
 makePlayerState :: IO PlayerState
 makePlayerState = do

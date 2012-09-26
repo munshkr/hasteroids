@@ -6,7 +6,7 @@ import Graphics.Rendering.OpenGL (GLfloat)
 data ShipState = ShipState {
     angle    :: IORef GLfloat,
     position :: IORef (GLfloat, GLfloat),
-    inertia  :: IORef (GLfloat, GLfloat)
+    velocity :: IORef (GLfloat, GLfloat)
   } deriving (Eq)
 
 data PlayerState = PlayerState {
@@ -17,7 +17,7 @@ data RocketState = RocketState {
     rocketInitialPosition :: IORef (GLfloat, GLfloat),
     rocketAngle           :: IORef GLfloat,
     rocketPosition        :: IORef (GLfloat, GLfloat),
-    rocketInertia         :: IORef (GLfloat, GLfloat)
+    rocketVelocity        :: IORef (GLfloat, GLfloat)
   } deriving (Eq)
 
 data PlayerAction = TurnLeft | TurnRight | Accelerate | Shoot

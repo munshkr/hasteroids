@@ -40,10 +40,10 @@ idle player ship rockets = do
   as <- get $ actions player
   a  <- get $ angle ship
   (x, y)   <- get $ position ship
-  (iX, iY) <- get $ inertia ship
+  (vx, vy) <- get $ velocity ship
   rs <- get rockets
 
-  -- update angle and inertia based on actions
+  -- update angle and velocity based on actions
   forM_ as $ \action ->
     let dx = cos $ a * pi / 180.0
         dy = sin $ a * pi / 180.0
@@ -51,20 +51,20 @@ idle player ship rockets = do
     in case action of
       TurnLeft   -> (angle ship)   $= (a + 5)
       TurnRight  -> (angle ship)   $= (a - 5)
-      Accelerate -> (inertia ship) $= (iX + dx * c, iY + dy * c)
+      Accelerate -> (velocity ship) $= (vx + dx * c, vy + dy * c)
       Shoot      -> do
         newRocket <- makeRocket a (x, y) (dx, dy)
         rockets   $= newRocket : rs
 
   -- update position of the ship
-  (position ship) $= ((x + iX) `fmod` viewportWidth,
-                      (y + iY) `fmod` viewportHeight)
+  (position ship) $= ((x + vx) `fmod` viewportWidth,
+                      (y + vy) `fmod` viewportHeight)
 
   -- update position of every rocket
   forM_ rs $ \r -> do
     (x, y)   <- get $ rocketPosition r
-    (iX, iY) <- get $ rocketInertia r
-    (rocketPosition r) $= (x + iX, y + iY)
+    (vx, vy) <- get $ rocketVelocity r
+    (rocketPosition r) $= (x + vx, y + vy)
 
   -- remove Shoot action to avoid rapid fire
   (actions player) $= delete Shoot as
@@ -116,16 +116,16 @@ drawRocket = preservingMatrix $ do
     vertex $ Vertex2 0 (1::GLfloat)
 
 makeRocket :: GLfloat -> (GLfloat, GLfloat) -> (GLfloat, GLfloat) -> IO RocketState
-makeRocket angle position inertia = do
+makeRocket angle position velocity = do
   ip <- newIORef position
   a  <- newIORef angle
   p  <- newIORef position
-  i  <- newIORef inertia
+  v  <- newIORef velocity
   return $ RocketState {
       rocketInitialPosition = ip,
       rocketAngle = a,
       rocketPosition = p,
-      rocketInertia = i
+      rocketVelocity = v
     }
 
 removeOldRockets :: [RocketState] -> IO [RocketState]
