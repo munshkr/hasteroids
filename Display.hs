@@ -2,7 +2,7 @@ module Display (display, idle) where
 
 import Graphics.Rendering.OpenGL hiding (position)
 import Graphics.UI.GLUT hiding (position)
-import Control.Monad (forM_)
+import Control.Monad (forM_, filterM)
 import Data.IORef (IORef)
 import Data.List (delete)
 import Data.IORef
@@ -64,11 +64,15 @@ idle player ship rockets = do
   forM_ rs $ \r -> do
     (x, y)   <- get $ rocketPosition r
     (iX, iY) <- get $ rocketInertia r
-    (rocketPosition r) $= ((x + iX) `fmod` viewportWidth,
-                           (y + iY) `fmod` viewportHeight)
+    (rocketPosition r) $= (x + iX, y + iY)
 
   -- remove Shoot action to avoid rapid fire
   (actions player) $= delete Shoot as
+
+  -- remove old rockets
+  rs <- get rockets
+  filteredRockets <- removeOldRockets rs
+  rockets $= filteredRockets
 
   postRedisplay Nothing
 
@@ -113,11 +117,21 @@ drawRocket = preservingMatrix $ do
 
 makeRocket :: GLfloat -> (GLfloat, GLfloat) -> (GLfloat, GLfloat) -> IO RocketState
 makeRocket angle position inertia = do
-  a <- newIORef angle
-  p <- newIORef position
-  i <- newIORef inertia
+  ip <- newIORef position
+  a  <- newIORef angle
+  p  <- newIORef position
+  i  <- newIORef inertia
   return $ RocketState {
+      rocketInitialPosition = ip,
       rocketAngle = a,
       rocketPosition = p,
       rocketInertia = i
     }
+
+removeOldRockets :: [RocketState] -> IO [RocketState]
+removeOldRockets = filterM $ \r -> do
+  (x, y) <- get $ rocketPosition r
+  (initX, initY) <- get $ rocketInitialPosition r
+  let dx = abs (x - initX)
+      dy = abs (y - initY)
+  return (dx <= viewportWidth && dy <= viewportHeight)

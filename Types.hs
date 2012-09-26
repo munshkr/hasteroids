@@ -13,11 +13,11 @@ data PlayerState = PlayerState {
     actions :: IORef [PlayerAction]
   } deriving (Eq)
 
--- FIXME this is the same as ShipState!! define EntityState and synonims?
 data RocketState = RocketState {
-    rocketAngle    :: IORef GLfloat,
-    rocketPosition :: IORef (GLfloat, GLfloat),
-    rocketInertia  :: IORef (GLfloat, GLfloat)
+    rocketInitialPosition :: IORef (GLfloat, GLfloat),
+    rocketAngle           :: IORef GLfloat,
+    rocketPosition        :: IORef (GLfloat, GLfloat),
+    rocketInertia         :: IORef (GLfloat, GLfloat)
   } deriving (Eq)
 
 data PlayerAction = TurnLeft | TurnRight | Accelerate | Shoot
