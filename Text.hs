@@ -19,7 +19,7 @@ renderChar (x, y) size c = preservingMatrix $ do
   scale size size size
   lineWidth $= charLineWidth
   renderPrimitive Lines $ do
-  forM_ (charVertices c) $ \(x, y) -> vertex $ Vertex2 x y
+    forM_ (charVertices c) $ \(x, y) -> vertex $ Vertex2 x y
 
 charVertices :: Char -> [(GLfloat, GLfloat)]
 charVertices c = let h = charHeight
